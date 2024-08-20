@@ -21,11 +21,9 @@ import kotlinx.serialization.json.Json
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import java.net.URI
+import org.json.JSONObject
 
 const val TAG = "ChatScreen"
-
-@Serializable
-data class MessageJson(val username: String, val message: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,9 +33,11 @@ fun ChatAppScreen() {
 
     val wsClient = remember {
             createWebSocketClient(chatHistory, onNewMessage = {
-                //val msgJson = Json.decodeFromString<MessageJson>(it)
-                //Log.d(TAG, "Name = ${msgJson.username}, ${msgJson.message}")
-                chatHistory += it // msgJson.message
+                val jsonObject = JSONObject(it)
+                val name = jsonObject.getString("username")
+                val message = jsonObject.getString("message")
+                chatHistory += "$name: $message"
+                //chatHistory += it // msgJson.message
             })
     }
 
