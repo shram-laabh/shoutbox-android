@@ -13,13 +13,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.example.shoutbox.screens.ChatAppScreen
 import com.example.shoutbox.ui.theme.ShoutboxTheme
+import com.example.shoutbox.viewmodels.ShoutsViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        //val viewModel: ShoutsViewModel = ShoutsViewModel()
         super.onCreate(savedInstanceState)
         setContent {
-            ChatAppScreen()
-            /*ShoutboxTheme {
+            //ChatAppScreen(viewModel)
+            ShoutboxTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -28,7 +30,7 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     AppNavigation(navController = navController)
                 }
-            }*/
+            }
         }
     }
 }

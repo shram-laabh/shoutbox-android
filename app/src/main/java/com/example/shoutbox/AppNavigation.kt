@@ -1,31 +1,30 @@
 package com.example.shoutbox
 
-import androidx.annotation.StringRes
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.R
-import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
-import com.example.shoutbox.repositories.ChatServerRepository
-import com.example.shoutbox.screens.ChatScreen
+import androidx.navigation.navArgument
+import com.example.shoutbox.screens.ChatAppScreen
 import com.example.shoutbox.screens.NameScreen
-import com.example.shoutbox.viewmodels.ChatViewModel
 import com.example.shoutbox.viewmodels.NameViewModel
+import com.example.shoutbox.viewmodels.ShoutsViewModel
 
 
 @Composable
 fun AppNavigation(navController: NavHostController){
-    val nameView = NameViewModel()
-    val chatRepo = ChatServerRepository()
-    val chatView = ChatViewModel(chatRepo)
+   // val nameView = NameViewModel()
+   // val shoutsView = ShoutsViewModel()
     NavHost(navController, "name"){
         composable("name"){
-            NameScreen(navController = navController, viewModel = nameView)
+            NameScreen(navController = navController, viewModel = viewModel())
         }
-        composable("chat"){
-            ChatScreen(navController = navController, viewModel = chatView)
+        composable("chat/{dataKey}",
+            arguments = listOf(navArgument("dataKey"){type = NavType.StringType})
+        ){ backStackEntry ->
+            ChatAppScreen(navController = navController, viewModel = viewModel(), backStackEntry.arguments?.getString("dataKey"))
         }
     }
 }
