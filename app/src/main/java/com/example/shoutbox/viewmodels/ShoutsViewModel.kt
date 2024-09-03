@@ -32,6 +32,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle) : ViewModel(){
    private val _errorMessage = MutableLiveData<String>()
    val errorMessage: LiveData<String> = _errorMessage
 
+
    private fun createWebSocketClient() : WebSocketClient{
       return object : WebSocketClient(uri) {
          override fun onOpen(handshakedata: ServerHandshake?) {
@@ -72,7 +73,6 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle) : ViewModel(){
          }
       }
    }
-
    init {
       // Initialize WebSocket and connect
       connectWebSocket()
