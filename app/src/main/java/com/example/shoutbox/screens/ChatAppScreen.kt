@@ -21,7 +21,7 @@ const val TAG = "ChatScreen"
 fun ChatAppScreen(
     navController: NavController,
     viewModel: ShoutsViewModel,
-    string: String?
+    nameString: String?
 ) {
     val uiState by viewModel.state.collectAsState()
     var message by remember { mutableStateOf(TextFieldValue("")) }
@@ -43,9 +43,8 @@ fun ChatAppScreen(
                 .padding(8.dp)
         )
         Button(
-            enabled = uiState.isConnected,
             onClick = {
-                val jsonMessage = """{"username": "${viewModel.data}", "message": "${message.text}"}"""
+                val jsonMessage = """{"username": "$nameString", "message": "${message.text}"}"""
                 viewModel.sendMessage(jsonMessage)
                 message = TextFieldValue("")
             },
