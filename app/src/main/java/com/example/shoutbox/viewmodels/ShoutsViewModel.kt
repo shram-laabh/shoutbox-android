@@ -1,13 +1,29 @@
 package com.example.shoutbox.viewmodels
 
+import android.Manifest
+import android.app.Application
+import android.content.Context
+import android.content.pm.PackageManager
+import android.health.connect.datatypes.ExerciseRoute
+import android.location.Location
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shoutbox.screenstates.ShoutsState
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,13 +37,13 @@ import java.net.URI
 
 private const val TAG = "ShoutsViewModel"
 
-class ShoutsViewModel(savedStateHandle: SavedStateHandle) : ViewModel(){
+class ShoutsViewModel(savedStateHandle: SavedStateHandle, application: Application) : AndroidViewModel(application = Application()){
    val data: String = savedStateHandle["dataKey"]?:"Anonym"
 
    private val _state = MutableStateFlow(ShoutsState())
    val state: StateFlow<ShoutsState> = _state.asStateFlow()
    private var webSocketClient: WebSocketClient? = null
-   private val uri = URI("ws://144.126.221.138:8080/ws")
+   private val uri = URI("ws://10.0.2.2:8080/ws")
 
    private val _errorMessage = MutableLiveData<String>()
    val errorMessage: LiveData<String> = _errorMessage
@@ -48,13 +64,15 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle) : ViewModel(){
             message?.let { newMessage ->
                // Add message to list and update state flow
                val jsonObject = JSONObject(newMessage)
+               Log.d(TAG, "Received Json $newMessage")
                val name = jsonObject.getString("username")
                val message = jsonObject.getString("message")
+               val distance = jsonObject.getString("distance")
                //  Be curious why we used viewModelScope.launch
                viewModelScope.launch {
                   _state.update { currentState ->
                      val updatedChatHistory = currentState.chatHistory.toMutableList().apply {
-                        add("$name: $message")  // Add new message
+                        add("$name: $message $distance")  // Add new message
                      }
                      currentState.copy(chatHistory = updatedChatHistory)
                   }
@@ -102,4 +120,6 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle) : ViewModel(){
          _errorMessage.value = "Looks like connection is broken!!. Restart your network."
       }
    }
+
+
 }

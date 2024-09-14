@@ -13,15 +13,16 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.shoutbox.viewmodels.ShoutsViewModel
+import com.google.android.gms.maps.model.LatLng
 
-const val TAG = "ChatScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatAppScreen(
     navController: NavController,
     viewModel: ShoutsViewModel,
-    nameString: String?
+    nameString: String?,
+    currentLocation: LatLng
 ) {
     val uiState by viewModel.state.collectAsState()
     var message by remember { mutableStateOf(TextFieldValue("")) }
@@ -42,9 +43,13 @@ fun ChatAppScreen(
                 .fillMaxWidth()
                 .padding(8.dp)
         )
+        Text("Your location is  ${currentLocation.latitude}/${currentLocation.longitude}")
         Button(
             onClick = {
-                val jsonMessage = """{"username": "$nameString", "message": "${message.text}"}"""
+                val jsonMessage = """{"username": "$nameString", 
+                    |"longitude":${currentLocation.longitude},
+                    |"latitude":${currentLocation.latitude},
+                    |"message": "${message.text}"}""".trimMargin()
                 viewModel.sendMessage(jsonMessage)
                 message = TextFieldValue("")
             },

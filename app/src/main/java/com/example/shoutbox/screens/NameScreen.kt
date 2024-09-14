@@ -1,7 +1,6 @@
 package com.example.shoutbox.screens
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -14,12 +13,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import com.example.shoutbox.viewmodels.NameViewModel
 
@@ -30,12 +25,12 @@ fun NameScreen(navController: NavController,
     val uiState by viewModel.state.collectAsState()
     var nameOfShouter by remember { mutableStateOf("") }
 
-    Column(){
+    Column{
         TextField(
             value = nameOfShouter,
             onValueChange = {
                 nameOfShouter = it
-                uiState.name = it.toString()
+                uiState.name = it
             },
             modifier = Modifier
                 .fillMaxWidth()
