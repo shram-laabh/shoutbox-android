@@ -1,5 +1,5 @@
 package com.example.shoutbox
-
+/*
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -9,8 +9,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.shoutbox.screens.ChatAppScreen
 import com.example.shoutbox.screens.NameScreen
-import com.example.shoutbox.viewmodels.NameViewModel
-import com.example.shoutbox.viewmodels.ShoutsViewModel
 
 
 @Composable
@@ -24,7 +22,13 @@ fun AppNavigation(navController: NavHostController){
         composable("chat/{dataKey}",
             arguments = listOf(navArgument("dataKey"){type = NavType.StringType})
         ){ backStackEntry ->
-            ChatAppScreen(navController = navController, viewModel = viewModel(), backStackEntry.arguments?.getString("dataKey"))
+            ChatAppScreen(
+                navController = navController,
+                viewModel = viewModel(),
+                backStackEntry.arguments?.getString("dataKey"),
+                currentLocation
+            )
         }
     }
 }
+*/
