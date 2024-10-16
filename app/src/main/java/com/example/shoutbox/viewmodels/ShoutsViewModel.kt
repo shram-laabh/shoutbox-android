@@ -87,6 +87,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, application: Applicati
          }
 
          override fun onError(ex: Exception?) {
+            Log.d(TAG, "SocketEx: Got error on socket $ex")
             reconnectWebSocket()
          }
       }
@@ -94,6 +95,12 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, application: Applicati
    init {
       // Initialize WebSocket and connect
       connectWebSocket()
+      val jsonMessage = """{"type": "token",
+               |"longitude": 37.7710,
+               |"latitude": -122.4232,
+               |"fcmtoken": "fsaQ1BeXQ4uWZoE8a1GUo-:APA91bF0TNXB-n6BCHhH4jK56QnuHTcbwLKcWrw0DvCSaTRWulPiH1OIkvIZX_6gunvhVidLl17Sxm5fSxndgsH3Kc5G9VQPyC9U5k-8Say-Zl4zUOAbaY0cc6eXyfDL-piTMTWDo2bP"}""".trimMargin()
+       Log.d(TAG, "Token Message = $jsonMessage")
+       sendMessage(jsonMessage)
    }
 
    private fun connectWebSocket() {
@@ -120,6 +127,4 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, application: Applicati
          _errorMessage.value = "Looks like connection is broken!!. Restart your network."
       }
    }
-
-
 }

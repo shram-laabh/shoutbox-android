@@ -27,6 +27,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Looper
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.SavedStateHandle
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -47,6 +49,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : ComponentActivity() {
 // TODO: Add code to reconnectWebsocket onResume, and Toast
@@ -54,13 +57,16 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
+            Log.d("SB_MAIN", "Location Permission Granted")
             // Permission granted
         } else {
+            Log.d("SB_MAIN", "Location Permission Denied")
             // Permission denied
         }
     }
 
 
+    private lateinit var fcmToken: String
     private lateinit var shoutsViewModel: ShoutsViewModel
     private lateinit var nameViewModel: NameViewModel
     private lateinit var networkMonitor: NetworkMonitor
@@ -69,6 +75,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var locationCallback: LocationCallback
     private var locationRequired: Boolean = false
     private val permissions = arrayOf(
+        //android.Manifest.permission.POST_NOTIFICATIONS,
         android.Manifest.permission.ACCESS_COARSE_LOCATION,
         android.Manifest.permission.ACCESS_FINE_LOCATION,
     )
@@ -99,10 +106,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             //ChatAppScreen(viewModel)
-            var currentLocation by remember {
-                mutableStateOf(LatLng(0.toDouble(), 0.toDouble()))
-            }
-            locationCallback = object : LocationCallback(){
+            /*locationCallback = object : LocationCallback(){
                 override fun onLocationResult(p0: LocationResult) {
                     super.onLocationResult(p0)
                     for (location in p0.locations){
@@ -128,16 +132,21 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+            }
             if (permissions.all { it
-                    ContextCompat.checkSelfPermission(this, it) ==
+                    ActivityCompat.checkSelfPermission(this, it) ==
                             PackageManager.PERMISSION_GRANTED
                 })
             {
                 // Get Location
                 startLocationUpdates()
+                Log.d("SB_MAIN", "All location permission accepted")
             } else {
                 launcherMultiplePermissions.launch(permissions)
-            }
+                Log.d("SB_MAIN", "Requesting Multiple Permission")
+            }*/
             ShoutboxTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -156,47 +165,59 @@ class MainActivity : ComponentActivity() {
                         ){ backStackEntry ->
                             ChatAppScreen(navController = navController,
                                 viewModel = shoutsViewModel,
-                                backStackEntry.arguments?.getString("dataKey"),
-                            currentLocation)
+                                backStackEntry.arguments?.getString("dataKey"))
                         }
                     }
                 }
             }
         }
         // Check if permission is already granted
-        when (PackageManager.PERMISSION_GRANTED) {
+        /*when (PackageManager.PERMISSION_GRANTED) {
             ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) -> {
                 // Permission already granted
+                Log.d("SB_MAIN", "Permission Already Granted")
             }
             else -> {
                 // Request permission
                 locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
+        } */
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+
+            // Get the FCM registration token
+            val token = task.result
+            Log.d("FCM", "FCM Token: $token")
+            // You can send this token to your backend to register the device
         }
-       //nameViewModel.getLocationAndSend(context = applicationContext)
+
+        //nameViewModel.getLocationAndSend(context = applicationContext)
     }
 
     override fun onResume() {
         super.onResume()
 
-        if (locationRequired){
+     /*   if (locationRequired){
             startLocationUpdates()
-        }
+        }*/
         shoutsViewModel.reconnectWebSocket()
         Log.d("Main", "Resumed APP")
     }
 
     override fun onPause() {
         super.onPause()
-        locationCallback?.let { it
+       /* locationCallback?.let { it
             fusedLocationProviderClient.removeLocationUpdates(it)
-        }
+        } */
     }
 
-    @SuppressLint("MissingPermission")
+    /*@SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
         locationCallback?.let { it
             val locationRequest = LocationRequest.Builder(
@@ -213,51 +234,6 @@ class MainActivity : ComponentActivity() {
                 Looper.getMainLooper()
             )
         }
-    }
-
-    @Composable
-    private fun LocationScreen(context: Context, currentLocation: LatLng){
-        val launcherMultiplePermissions = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestMultiplePermissions(),
-        ){
-            permissionMaps ->
-            val areGranted = permissionMaps.values.reduce {
-                acc,
-                    next -> acc && next
-            }
-            if (areGranted){
-                locationRequired = true
-                startLocationUpdates()
-                Toast.makeText(context,"Permission Granted", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context,"Permission Denied", Toast.LENGTH_SHORT).show()
-            }
-        }
-        Box(modifier = Modifier.fillMaxSize()){
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Bottom,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                Text(text = "Your location: ${currentLocation.latitude}/${currentLocation.longitude}")
-                Button(onClick = {
-                /*TODO */
-                    if (permissions.all { it
-                            ContextCompat.checkSelfPermission(context, it) ==
-                            PackageManager.PERMISSION_GRANTED
-                        })
-                    {
-                        // Get Location
-                        startLocationUpdates()
-                    } else {
-                        launcherMultiplePermissions.launch(permissions)
-                    }
-                }){
-                    Text(text = "Get your location")
-                }
-            }
-        }
-    }
+    }*/
 }
 

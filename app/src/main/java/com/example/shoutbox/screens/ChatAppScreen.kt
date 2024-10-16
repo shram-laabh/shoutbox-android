@@ -9,9 +9,11 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.shoutbox.PermissionManager
 import com.example.shoutbox.viewmodels.ShoutsViewModel
 import com.google.android.gms.maps.model.LatLng
 
@@ -22,12 +24,23 @@ fun ChatAppScreen(
     navController: NavController,
     viewModel: ShoutsViewModel,
     nameString: String?,
-    currentLocation: LatLng
 ) {
     val uiState by viewModel.state.collectAsState()
     var message by remember { mutableStateOf(TextFieldValue("")) }
     //var chatHistory by remember { mutableStateOf(listOf<String>()) }
 
+    val context = LocalContext.current
+    val permissionManager = remember { PermissionManager(context) } // Initialize directly
+
+    var latitude by remember { mutableStateOf<Double?>(null) }
+    var longitude by remember { mutableStateOf<Double?>(null) }
+        LaunchedEffect(Unit) {
+            // Request location and get the latitude and longitude via callback
+            permissionManager.requestLocationPermissions { lat, lon ->
+                latitude = lat
+                longitude = lon
+            }
+        }
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp)) {
@@ -43,12 +56,13 @@ fun ChatAppScreen(
                 .fillMaxWidth()
                 .padding(8.dp)
         )
-        Text("Your location is  ${currentLocation.latitude}/${currentLocation.longitude}")
+        Text("Your location is  ${latitude}/${longitude}")
         Button(
             onClick = {
-                val jsonMessage = """{"username": "$nameString", 
-                    |"longitude":${currentLocation.longitude},
-                    |"latitude":${currentLocation.latitude},
+                val jsonMessage = """{"type" : "chat",
+                    |"username": "$nameString", 
+                    |"longitude":${longitude},
+                    |"latitude":${latitude},
                     |"message": "${message.text}"}""".trimMargin()
                 viewModel.sendMessage(jsonMessage)
                 message = TextFieldValue("")

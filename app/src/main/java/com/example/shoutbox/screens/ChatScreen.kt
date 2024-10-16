@@ -21,7 +21,7 @@ import com.example.shoutbox.viewmodels.ChatViewModel
 import com.example.shoutbox.viewmodels.NameViewModel
 
 private const val SERVER_IP = "10.0.2.2"
-private const val SERVER_PORT = 8000
+private const val SERVER_PORT = 8080
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(navController: NavController,
