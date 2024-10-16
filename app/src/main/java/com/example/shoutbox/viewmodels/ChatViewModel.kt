@@ -32,9 +32,10 @@ class ChatViewModel(private val repository: ChatServerRepository) : ViewModel() 
     }
 
     fun sendMessage(message: String) {
+        Log.d(TAG, "Sending message = $message")
         viewModelScope.launch(Dispatchers.IO) {
             repository.sendMessage(message)
-            Log.d(TAG, "Message Sent")
+            Log.d(TAG, "Message Sent $message")
         }
     }
 
