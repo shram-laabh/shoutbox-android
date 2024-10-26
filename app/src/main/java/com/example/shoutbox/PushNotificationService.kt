@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -19,6 +18,8 @@ class PushNotificationService : FirebaseMessagingService() {
         val notification = remoteMessage.notification
         if (notification != null) {
             Log.d("FCM", "Message Notification Body: ${notification.title} ${notification.body}")
+            // Notification body should have User name and message sent by her/him
+            notification.body?.let { SharedPreferenceStore(this).saveNotification(it) }
             //Toast.makeText(this, "Connected to Internet", Toast.LENGTH_SHORT).show()
             sendNotification(notification.title, notification.body)
         }

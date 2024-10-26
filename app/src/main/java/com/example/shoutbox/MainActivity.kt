@@ -105,48 +105,6 @@ class MainActivity : ComponentActivity() {
         })
 
         setContent {
-            //ChatAppScreen(viewModel)
-            /*locationCallback = object : LocationCallback(){
-                override fun onLocationResult(p0: LocationResult) {
-                    super.onLocationResult(p0)
-                    for (location in p0.locations){
-                        currentLocation = LatLng(location.latitude, location.longitude)
-                    }
-                }
-            }
-
-            val launcherMultiplePermissions = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.RequestMultiplePermissions(),
-            ){
-                    permissionMaps ->
-                val areGranted = permissionMaps.values.reduce {
-                        acc,
-                        next -> acc && next
-                }
-                if (areGranted){
-                    locationRequired = true
-                    startLocationUpdates()
-                    Toast.makeText(this,"Permission Granted", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this,"Permission Denied", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
-            }
-            if (permissions.all { it
-                    ActivityCompat.checkSelfPermission(this, it) ==
-                            PackageManager.PERMISSION_GRANTED
-                })
-            {
-                // Get Location
-                startLocationUpdates()
-                Log.d("SB_MAIN", "All location permission accepted")
-            } else {
-                launcherMultiplePermissions.launch(permissions)
-                Log.d("SB_MAIN", "Requesting Multiple Permission")
-            }*/
             ShoutboxTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -171,20 +129,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        // Check if permission is already granted
-        /*when (PackageManager.PERMISSION_GRANTED) {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) -> {
-                // Permission already granted
-                Log.d("SB_MAIN", "Permission Already Granted")
-            }
-            else -> {
-                // Request permission
-                locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-            }
-        } */
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 Log.w("FCM", "Fetching FCM registration token failed", task.exception)
@@ -194,46 +138,20 @@ class MainActivity : ComponentActivity() {
             // Get the FCM registration token
             val token = task.result
             Log.d("FCM", "FCM Token: $token")
+            shoutsViewModel.setFcmToken(token)
             // You can send this token to your backend to register the device
         }
 
-        //nameViewModel.getLocationAndSend(context = applicationContext)
     }
 
     override fun onResume() {
         super.onResume()
-
-     /*   if (locationRequired){
-            startLocationUpdates()
-        }*/
         shoutsViewModel.reconnectWebSocket()
         Log.d("Main", "Resumed APP")
     }
 
     override fun onPause() {
         super.onPause()
-       /* locationCallback?.let { it
-            fusedLocationProviderClient.removeLocationUpdates(it)
-        } */
     }
-
-    /*@SuppressLint("MissingPermission")
-    private fun startLocationUpdates() {
-        locationCallback?.let { it
-            val locationRequest = LocationRequest.Builder(
-                Priority.PRIORITY_HIGH_ACCURACY, 100
-            )
-                .setWaitForAccurateLocation(false)
-                .setMinUpdateIntervalMillis(3000)
-                .setMaxUpdateDelayMillis(100)
-                .build()
-
-            fusedLocationProviderClient?.requestLocationUpdates(
-                locationRequest,
-                it,
-                Looper.getMainLooper()
-            )
-        }
-    }*/
 }
 

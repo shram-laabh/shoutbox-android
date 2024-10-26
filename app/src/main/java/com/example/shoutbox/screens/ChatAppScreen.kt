@@ -1,5 +1,6 @@
 package com.example.shoutbox.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material3.Button
@@ -39,6 +40,12 @@ fun ChatAppScreen(
             permissionManager.requestLocationPermissions { lat, lon ->
                 latitude = lat
                 longitude = lon
+                val jsonMessage = """{"type": "token",
+               |"longitude": ${longitude},
+               |"latitude": ${latitude},
+               |"fcmtoken": "${viewModel.fcmToken.value}"}""".trimMargin()
+                Log.d("ChatAppScreen", "Token Message = $jsonMessage")
+                viewModel.sendMessage(jsonMessage)
             }
         }
     Column(modifier = Modifier

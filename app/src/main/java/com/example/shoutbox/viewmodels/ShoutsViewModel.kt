@@ -9,6 +9,7 @@ import android.location.Location
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
@@ -17,6 +18,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.shoutbox.SharedPreferenceStore
 import com.example.shoutbox.screenstates.ShoutsState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -39,7 +41,7 @@ private const val TAG = "ShoutsViewModel"
 
 class ShoutsViewModel(savedStateHandle: SavedStateHandle, application: Application) : AndroidViewModel(application = Application()){
    val data: String = savedStateHandle["dataKey"]?:"Anonym"
-
+   private val prevMessages = SharedPreferenceStore(application)
    private val _state = MutableStateFlow(ShoutsState())
    val state: StateFlow<ShoutsState> = _state.asStateFlow()
    private var webSocketClient: WebSocketClient? = null
@@ -48,7 +50,13 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, application: Applicati
    private val _errorMessage = MutableLiveData<String>()
    val errorMessage: LiveData<String> = _errorMessage
 
+   private val _fcmToken = MutableLiveData<String>()
+   val fcmToken: LiveData<String> get() = _fcmToken
 
+   // Function to set the FCM token
+   fun setFcmToken(token: String) {
+      _fcmToken.value = token
+   }
    private fun createWebSocketClient() : WebSocketClient{
       return object : WebSocketClient(uri) {
          override fun onOpen(handshakedata: ServerHandshake?) {
@@ -95,12 +103,19 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, application: Applicati
    init {
       // Initialize WebSocket and connect
       connectWebSocket()
-      val jsonMessage = """{"type": "token",
-               |"longitude": 37.7710,
-               |"latitude": -122.4232,
-               |"fcmtoken": "fsaQ1BeXQ4uWZoE8a1GUo-:APA91bF0TNXB-n6BCHhH4jK56QnuHTcbwLKcWrw0DvCSaTRWulPiH1OIkvIZX_6gunvhVidLl17Sxm5fSxndgsH3Kc5G9VQPyC9U5k-8Say-Zl4zUOAbaY0cc6eXyfDL-piTMTWDo2bP"}""".trimMargin()
-       Log.d(TAG, "Token Message = $jsonMessage")
-       sendMessage(jsonMessage)
+
+
+      val previousMessages = prevMessages.getNotifications()
+      viewModelScope.launch {
+         _state.update { currentState ->
+            val updatedChatHistory = currentState.chatHistory.toMutableList().apply {
+               for (msg in previousMessages){
+                  add(msg)  // Add new message
+               }
+            }
+            currentState.copy(chatHistory = updatedChatHistory)
+         }
+      }
    }
 
    private fun connectWebSocket() {
