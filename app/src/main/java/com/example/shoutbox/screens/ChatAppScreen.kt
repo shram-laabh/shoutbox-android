@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -50,10 +51,13 @@ fun ChatAppScreen(
         }
     Column(modifier = Modifier
         .fillMaxSize()
-        .padding(16.dp)) {
+        .padding(16.dp)
+        .testTag("ChatScreen")) {
         Column(modifier = Modifier.weight(1f)) {
             uiState.chatHistory.forEach { message ->
-                Text(text = message)
+                Text(text = message,
+                    modifier = Modifier
+                        .testTag("Message"))
             }
         }
         TextField(
@@ -62,6 +66,7 @@ fun ChatAppScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
+                .testTag("ChatMessage")
         )
         Text("Your location is  ${latitude}/${longitude}")
         Button(
@@ -74,7 +79,9 @@ fun ChatAppScreen(
                 viewModel.sendMessage(jsonMessage)
                 message = TextFieldValue("")
             },
-            modifier = Modifier.align(Alignment.End)
+            modifier = Modifier
+                .align(Alignment.End)
+                .testTag("SendChatButton")
         ) {
             Text("Send")
         }
