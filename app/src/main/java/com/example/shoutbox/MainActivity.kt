@@ -52,33 +52,14 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : ComponentActivity() {
+
 // TODO: Add code to reconnectWebsocket onResume, and Toast
-    private val locationPermissionRequest = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            Log.d("SB_MAIN", "Location Permission Granted")
-            // Permission granted
-        } else {
-            Log.d("SB_MAIN", "Location Permission Denied")
-            // Permission denied
-        }
-    }
 
-
-    private lateinit var fcmToken: String
     private lateinit var shoutsViewModel: ShoutsViewModel
     private lateinit var nameViewModel: NameViewModel
     private lateinit var networkMonitor: NetworkMonitor
 
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private lateinit var locationCallback: LocationCallback
-    private var locationRequired: Boolean = false
-    private val permissions = arrayOf(
-        //android.Manifest.permission.POST_NOTIFICATIONS,
-        android.Manifest.permission.ACCESS_COARSE_LOCATION,
-        android.Manifest.permission.ACCESS_FINE_LOCATION,
-    )
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

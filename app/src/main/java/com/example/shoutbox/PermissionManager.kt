@@ -52,8 +52,9 @@ class PermissionManager(
             Toast.makeText(context, "Location permission already granted", Toast.LENGTH_SHORT).show()
             locationLauncher.launch(
                 arrayOf(
+                    Manifest.permission.POST_NOTIFICATIONS,
                     Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
                 )
             )
         } else {

@@ -15,18 +15,22 @@ class PushNotificationService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         // Handle FCM notification
+        Log.d("FCM_svc", "Got Message")
         val notification = remoteMessage.notification
         if (notification != null) {
-            Log.d("FCM", "Message Notification Body: ${notification.title} ${notification.body}")
+            Log.d("FCM_svc", "Message Notification Body: ${notification.title} ${notification.body}")
             // Notification body should have User name and message sent by her/him
-            notification.body?.let { SharedPreferenceStore(this).saveNotification(it) }
-            //Toast.makeText(this, "Connected to Internet", Toast.LENGTH_SHORT).show()
+            notification.body?.let {
+                SharedPreferenceStore(applicationContext).saveNotification(it)
+                Log.d("FCM_svc", "Saving it to Preference store: ${notification.title} ${notification.body}")
+            }
             sendNotification(notification.title, notification.body)
         }
     }
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         // Handle the new FCM token, typically by sending it to the server
+        Log.d("FCM_svc", "On New Token")
     }
     private fun sendNotification(title: String?, message: String?) {
         val intent = Intent(this, MainActivity::class.java)
@@ -34,6 +38,7 @@ class PushNotificationService : FirebaseMessagingService() {
         val pendingIntent = PendingIntent.getActivity(this, 0, intent,
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE)
 
+        Log.d("FCM_svc", "Send Notification")
         val channelId = "default_channel"
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
