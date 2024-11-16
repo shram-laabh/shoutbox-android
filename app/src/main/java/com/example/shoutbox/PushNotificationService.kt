@@ -8,8 +8,18 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
+import com.example.shoutbox.notificationdb.NotificationDbApp
+import com.example.shoutbox.notificationdb.NotificationEntity
+import com.example.shoutbox.notificationworker.NotificationWorker
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class PushNotificationService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
@@ -17,15 +27,24 @@ class PushNotificationService : FirebaseMessagingService() {
         // Handle FCM notification
         Log.d("FCM_svc", "Got Message")
         val notification = remoteMessage.notification
+        if (remoteMessage.data.isNotEmpty()) {
+            val data = remoteMessage.data
+
+            // Save data payload in Room Database or SharedPreferences
+            startFGService(data["title"], data["body"])
+        }
         if (notification != null) {
             Log.d("FCM_svc", "Message Notification Body: ${notification.title} ${notification.body}")
-            // Notification body should have User name and message sent by her/him
-            notification.body?.let {
-                SharedPreferenceStore(applicationContext).saveNotification(it)
-                Log.d("FCM_svc", "Saving it to Preference store: ${notification.title} ${notification.body}")
-            }
             sendNotification(notification.title, notification.body)
         }
+    }
+    private fun startFGService(title: String?, body: String?){
+        val intent = Intent(this, NotificationForegroundService::class.java).apply {
+            putExtra("title", title)
+            putExtra("body", body)
+        }
+
+        ContextCompat.startForegroundService(applicationContext, intent)
     }
     override fun onNewToken(token: String) {
         super.onNewToken(token)

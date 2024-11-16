@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.SavedStateHandle
+import com.example.shoutbox.notificationdb.NotificationRepository
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -64,7 +65,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-        shoutsViewModel = ShoutsViewModel(savedStateHandle = SavedStateHandle(),
+        shoutsViewModel = ShoutsViewModel(savedStateHandle = SavedStateHandle(), NotificationRepository(this),
                                             application)
         nameViewModel = NameViewModel()
         shoutsViewModel.errorMessage.observe(this) { message ->

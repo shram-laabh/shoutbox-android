@@ -34,10 +34,6 @@ class PermissionManager(
         this.locationLauncher = launcher
     }
 
-    fun setNotificationLauncher(launcher: ActivityResultLauncher<String>) {
-        this.notificationLauncher = launcher
-    }
-
     fun requestLocationPermissions(onLocationReceived: (Double, Double) -> Unit) {
         if (ContextCompat.checkSelfPermission(
                 context,
@@ -59,23 +55,6 @@ class PermissionManager(
             )
         } else {
             getCurrentLocation(onLocationReceived)
-        }
-    }
-
-    fun requestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            } else {
-             //   Toast.makeText(context, "Notification permission already granted", Toast.LENGTH_SHORT).show()
-                Log.d("Creation", "Seeing notification")
-            }
-        } else {
-            Toast.makeText(context, "Notification permission not needed below Android 13", Toast.LENGTH_SHORT).show()
         }
     }
 
