@@ -19,6 +19,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shoutbox.SharedPreferenceStore
+import com.example.shoutbox.notificationdb.NotificationEntity
+import com.example.shoutbox.notificationdb.NotificationRepository
 import com.example.shoutbox.screenstates.ShoutsState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -32,6 +34,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.intellij.lang.annotations.Flow
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import org.json.JSONObject
@@ -39,7 +42,7 @@ import java.net.URI
 
 private const val TAG = "ShoutsViewModel"
 
-class ShoutsViewModel(savedStateHandle: SavedStateHandle, application: Application) : AndroidViewModel(application = Application()){
+class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository: NotificationRepository, application: Application) : AndroidViewModel(application = Application()){
    val data: String = savedStateHandle["dataKey"]?:"Anonym"
    private val prevMessages = SharedPreferenceStore(application)
    private val _state = MutableStateFlow(ShoutsState())
@@ -104,16 +107,16 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, application: Applicati
       // Initialize WebSocket and connect
       connectWebSocket()
 
-
-      val previousMessages = prevMessages.getNotifications()
       viewModelScope.launch {
-         _state.update { currentState ->
-            val updatedChatHistory = currentState.chatHistory.toMutableList().apply {
-               for (msg in previousMessages){
-                  add(msg)  // Add new message
+         repository.notificationDao.getTop100Notifications().collect { notificationList ->
+            _state.update { currentState ->
+               val updatedChatHistory = currentState.chatHistory.toMutableList().apply {
+                  for (msg in notificationList){
+                     add(msg.message)  // Add new message
+                  }
                }
+               currentState.copy(chatHistory = updatedChatHistory)
             }
-            currentState.copy(chatHistory = updatedChatHistory)
          }
       }
    }

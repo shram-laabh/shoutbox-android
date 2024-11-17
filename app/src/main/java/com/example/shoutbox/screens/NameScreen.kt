@@ -42,15 +42,6 @@ fun NameScreen(navController: NavController,
     var latitude by remember { mutableStateOf<Double?>(null) }
     var longitude by remember { mutableStateOf<Double?>(null) }
     // Notification permission launcher (For Android 13 and above)
-    val notificationLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            //Toast.makeText(context, "Notification permission granted", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(context, "Notification permission denied", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     // Location permission launcher
     val locationLauncher = rememberLauncherForActivityResult(
@@ -71,10 +62,7 @@ fun NameScreen(navController: NavController,
         }
     }
 
-    // Set launchers in PermissionManager
     permissionManager.setLocationLauncher(locationLauncher)
-    permissionManager.setNotificationLauncher(notificationLauncher)
-
 
     Column{
         TextField(
