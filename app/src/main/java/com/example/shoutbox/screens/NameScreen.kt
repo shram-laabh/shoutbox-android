@@ -1,11 +1,13 @@
 package com.example.shoutbox.screens
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,12 +22,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.shoutbox.PermissionManager
 import com.example.shoutbox.viewmodels.NameViewModel
 
@@ -43,6 +49,10 @@ fun NameScreen(navController: NavController,
     var longitude by remember { mutableStateOf<Double?>(null) }
     // Notification permission launcher (For Android 13 and above)
 
+    val isNameValid: (String) -> Boolean = {
+        it.length > 3
+    }
+    var isButtonEnabled = remember{ mutableStateOf(false) }
     // Location permission launcher
     val locationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -64,12 +74,18 @@ fun NameScreen(navController: NavController,
 
     permissionManager.setLocationLauncher(locationLauncher)
 
-    Column{
+    Column(
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .padding(24.dp)
+    ){
         TextField(
             value = nameOfShouter,
+            label={Text("Enter a Name to identify with")},
             onValueChange = {
                 nameOfShouter = it
                 uiState.name = it
+                isButtonEnabled.value = isNameValid(it)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -80,8 +96,10 @@ fun NameScreen(navController: NavController,
             onClick = {
                 navController.navigate("chat/${uiState.name}")
             },
+            enabled = isButtonEnabled.value,
             modifier = Modifier
                 .testTag("ShoutButton")
+                .align(Alignment.CenterHorizontally)
         ) {
             Text("Shout")
         }
@@ -96,4 +114,10 @@ fun NameScreen(navController: NavController,
             longitude = lon
         }
     }
+}
+
+@Preview
+@Composable
+fun SimpleComposablePreview() {
+    NameScreen(navController = rememberNavController(), viewModel = viewModel())
 }

@@ -21,6 +21,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.shoutbox.SharedPreferenceStore
 import com.example.shoutbox.notificationdb.NotificationEntity
 import com.example.shoutbox.notificationdb.NotificationRepository
+import com.example.shoutbox.screenstates.ChatMessage
 import com.example.shoutbox.screenstates.ShoutsState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -48,7 +49,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
    private val _state = MutableStateFlow(ShoutsState())
    val state: StateFlow<ShoutsState> = _state.asStateFlow()
    private var webSocketClient: WebSocketClient? = null
-   private val uri = URI("ws://10.0.2.2:8080/ws")
+   private val uri = URI("ws://10.0.2.2:8080/ws") //  ws://144.126.221.138:8080/ws
 
    private val _errorMessage = MutableLiveData<String>()
    val errorMessage: LiveData<String> = _errorMessage
@@ -83,7 +84,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
                viewModelScope.launch {
                   _state.update { currentState ->
                      val updatedChatHistory = currentState.chatHistory.toMutableList().apply {
-                        add("$name: $message $distance")  // Add new message
+                        add(ChatMessage(name, message, distance.toDouble()))  // Add new message
                      }
                      currentState.copy(chatHistory = updatedChatHistory)
                   }
@@ -112,7 +113,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
             _state.update { currentState ->
                val updatedChatHistory = currentState.chatHistory.toMutableList().apply {
                   for (msg in notificationList){
-                     add(msg.message)  // Add new message
+                     add(ChatMessage("User", msg.message, 2343.34))  // Add new message
                   }
                }
                currentState.copy(chatHistory = updatedChatHistory)

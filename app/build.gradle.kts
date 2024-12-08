@@ -49,6 +49,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.test:core-ktx:1.6.1")
     //Work Manager
     val work_version = "2.9.1"
     implementation("androidx.work:work-runtime-ktx:$work_version")
