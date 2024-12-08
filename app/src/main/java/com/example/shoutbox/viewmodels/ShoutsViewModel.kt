@@ -19,6 +19,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shoutbox.SharedPreferenceStore
+import com.example.shoutbox.notificationdb.NotificationDbApp
 import com.example.shoutbox.notificationdb.NotificationEntity
 import com.example.shoutbox.notificationdb.NotificationRepository
 import com.example.shoutbox.screenstates.ChatMessage
@@ -29,6 +30,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,6 +48,7 @@ private const val TAG = "ShoutsViewModel"
 class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository: NotificationRepository, application: Application) : AndroidViewModel(application = Application()){
    val data: String = savedStateHandle["dataKey"]?:"Anonym"
    private val prevMessages = SharedPreferenceStore(application)
+   val notificationRepository = NotificationRepository(application)
    private val _state = MutableStateFlow(ShoutsState())
    val state: StateFlow<ShoutsState> = _state.asStateFlow()
    private var webSocketClient: WebSocketClient? = null
@@ -88,10 +91,20 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
                      }
                      currentState.copy(chatHistory = updatedChatHistory)
                   }
+
+                  val messgaeToSave = NotificationEntity(
+                     title = name,
+                     message = message,
+                     timestamp = System.currentTimeMillis()
+                  )
+                  saveMessageToDB(messgaeToSave)
                }
             }
          }
 
+         suspend fun saveMessageToDB(data: NotificationEntity) {
+            notificationRepository.notificationDao.insert(data)
+         }
          override fun onClose(code: Int, reason: String?, remote: Boolean) {
             // WebSocket connection closed
             Log.d(TAG, "WKST Closed")
@@ -112,8 +125,8 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
          repository.notificationDao.getTop100Notifications().collect { notificationList ->
             _state.update { currentState ->
                val updatedChatHistory = currentState.chatHistory.toMutableList().apply {
-                  for (msg in notificationList){
-                     add(ChatMessage("User", msg.message, 2343.34))  // Add new message
+                  for (msg in notificationList.asReversed()){
+                     add(ChatMessage("User", msg.message, 3.34))  // Add new message
                   }
                }
                currentState.copy(chatHistory = updatedChatHistory)
