@@ -45,6 +45,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.createSavedStateHandle
@@ -178,7 +179,7 @@ fun ChatAppScreen(
             }
             permissionDone = true
         }
-        listState.animateScrollToItem(uiState.chatHistory.size - 1)
+        listState.animateScrollToItem(kotlin.math.max(0,uiState.chatHistory.size - 1))
     }
 
     Scaffold(

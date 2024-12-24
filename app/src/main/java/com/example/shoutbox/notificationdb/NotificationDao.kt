@@ -13,4 +13,7 @@ interface NotificationDao {
 
     @Query("SELECT * FROM notification_table ORDER BY timestamp DESC LIMIT 100")
     fun getTop100Notifications(): Flow<List<NotificationEntity>>
+
+    @Query("DELETE FROM notification_table")
+    suspend fun clearTable()
 }
