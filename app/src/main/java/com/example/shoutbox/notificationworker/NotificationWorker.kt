@@ -12,15 +12,19 @@ class NotificationWorker(
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
-        val title = inputData.getString("title") ?: "No Title"
-        val body = inputData.getString("body") ?: "No Body"
+        try{
+            val title = inputData.getString("title") ?: "No Title"
+            val body = inputData.getString("body") ?: "No Body"
 
-        // Get instance of Room database and save data
-        val notificationEntity = NotificationEntity(title = title, message = body, timestamp = 25)
+            // Get instance of Room database and save data
+            val notificationEntity = NotificationEntity(title = title, message = body, timestamp = 25)
 
-        val notificationRepository = NotificationRepository(applicationContext)
-        notificationRepository.notificationDao.insert(notificationEntity)
-
-        return Result.success()
+            val notificationRepository = NotificationRepository(applicationContext)
+            notificationRepository.notificationDao.insert(notificationEntity)
+            return Result.success()
+        }  catch (e: Exception) {
+            e.printStackTrace()
+            return Result.failure()
+        }
     }
 }

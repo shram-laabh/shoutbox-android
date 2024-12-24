@@ -52,7 +52,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
    private val _state = MutableStateFlow(ShoutsState())
    val state: StateFlow<ShoutsState> = _state.asStateFlow()
    private var webSocketClient: WebSocketClient? = null
-   private val uri = URI("ws://144.126.221.138:8080/ws") //  ws://10.0.2.2:8080/ws
+   private val uri = URI("ws://10.0.2.2:8080/ws") //ws://144.126.221.138:8080/ws
 
    private val _errorMessage = MutableLiveData<String>()
    val errorMessage: LiveData<String> = _errorMessage
@@ -98,12 +98,16 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
                      timestamp = System.currentTimeMillis()
                   )
                   saveMessageToDB(messgaeToSave)
+                  //clearMessages()
                }
             }
          }
 
          suspend fun saveMessageToDB(data: NotificationEntity) {
             notificationRepository.notificationDao.insert(data)
+         }
+         suspend fun clearMessages() {
+            notificationRepository.notificationDao.clearTable()
          }
          override fun onClose(code: Int, reason: String?, remote: Boolean) {
             // WebSocket connection closed
@@ -126,6 +130,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
             _state.update { currentState ->
                val updatedChatHistory = currentState.chatHistory.toMutableList().apply {
                   for (msg in notificationList.asReversed()){
+                     // TODO: Add right distance in State of Chat History
                      add(ChatMessage("User", msg.message, 3.34))  // Add new message
                   }
                }

@@ -20,8 +20,6 @@ import kotlinx.coroutines.launch
 
 // NotificationForegroundService.kt
 class NotificationForegroundService : Service() {
-
-
     override fun onCreate() {
         super.onCreate()
     }
@@ -60,7 +58,9 @@ class NotificationForegroundService : Service() {
     }
 
     private fun saveNotificationData(data: NotificationEntity) {
+        Log.d("FGSERVICE", "SavingNotificationDat")
         CoroutineScope(Dispatchers.IO).launch {
+            Log.d("FGSERVICE", "Inside DB IO Co-routine")
             val notificationRepository = NotificationRepository(applicationContext)
             notificationRepository.notificationDao.insert(data)
         }
