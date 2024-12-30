@@ -1,43 +1,23 @@
 package com.example.shoutbox.viewmodels
 
-import android.Manifest
 import android.app.Application
-import android.content.Context
-import android.content.pm.PackageManager
-import android.health.connect.datatypes.ExerciseRoute
-import android.location.Location
-import android.os.Looper
 import android.util.Log
-import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shoutbox.SharedPreferenceStore
-import com.example.shoutbox.notificationdb.NotificationDbApp
-import com.example.shoutbox.notificationdb.NotificationEntity
-import com.example.shoutbox.notificationdb.NotificationRepository
+import com.example.shoutbox.notification.NotificationEntity
+import com.example.shoutbox.notification.NotificationRepository
 import com.example.shoutbox.screenstates.ChatMessage
 import com.example.shoutbox.screenstates.ShoutsState
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.intellij.lang.annotations.Flow
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import org.json.JSONObject
@@ -92,12 +72,13 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
                      currentState.copy(chatHistory = updatedChatHistory)
                   }
 
-                  val messgaeToSave = NotificationEntity(
+                  val messageToSave = NotificationEntity(
                      title = name,
                      message = message,
-                     timestamp = System.currentTimeMillis()
+                     timestamp = System.currentTimeMillis(),
+                     distance = distance.toDouble()
                   )
-                  saveMessageToDB(messgaeToSave)
+                  saveMessageToDB(messageToSave)
                   //clearMessages()
                }
             }

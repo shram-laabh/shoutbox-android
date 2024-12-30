@@ -2,10 +2,8 @@ package com.example.shoutbox
 
 import android.app.job.JobParameters
 import android.app.job.JobService
-import android.util.Log
-import com.example.shoutbox.notificationdb.NotificationDatabase
-import com.example.shoutbox.notificationdb.NotificationEntity
-import com.example.shoutbox.notificationdb.NotificationRepository
+import com.example.shoutbox.notification.NotificationEntity
+import com.example.shoutbox.notification.NotificationRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,7 +21,7 @@ class SaveNotificationJobService : JobService() {
 
             title?.let {
                 body?.let {
-                    notifEntity = NotificationEntity(title = title, message =  body, timestamp = 23)
+                    notifEntity = NotificationEntity(title = title, message =  body, timestamp = 23, distance = 3.24)
                 }
             }
             val notificationRepository = NotificationRepository(applicationContext)

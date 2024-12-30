@@ -10,10 +10,8 @@ import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import com.example.shoutbox.notificationdb.NotificationDao
-import com.example.shoutbox.notificationdb.NotificationDatabase
-import com.example.shoutbox.notificationdb.NotificationEntity
-import com.example.shoutbox.notificationdb.NotificationRepository
+import com.example.shoutbox.notification.NotificationEntity
+import com.example.shoutbox.notification.NotificationRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,7 +30,7 @@ class NotificationForegroundService : Service() {
         Log.d("FGSERVICE", "In start Command")
         title?.let {
             body?.let {
-                saveNotificationData(NotificationEntity(title = title, message =  body, timestamp = 23))
+                saveNotificationData(NotificationEntity(title = title, message =  body, timestamp = 23, distance = 3.24))
             }
         }
 
