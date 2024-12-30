@@ -1,7 +1,5 @@
 package com.example.shoutbox.screens
 
-import android.app.Application
-import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,53 +10,36 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.Blue
-import androidx.compose.ui.graphics.Color.Companion.Cyan
 import androidx.compose.ui.graphics.Color.Companion.Green
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.White
-import androidx.compose.ui.graphics.Color.Companion.Yellow
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import androidx.test.core.app.ApplicationProvider
 import com.example.shoutbox.PermissionManager
-import com.example.shoutbox.notificationdb.NotificationRepository
 import com.example.shoutbox.viewmodels.ShoutsViewModel
-import com.google.android.gms.maps.model.LatLng
 import kotlin.math.ceil
-import kotlin.math.floor
 
 /*
 @OptIn(ExperimentalMaterial3Api::class)
@@ -150,7 +131,7 @@ fun ChatAppScreenPreview() {
 fun ChatAppScreen(
     navController: NavController,
     viewModel: ShoutsViewModel,
-    nameString: String?,
+    nameVar: String?,
 ) {
     val uiState by viewModel.state.collectAsState()
     var message by remember { mutableStateOf(TextFieldValue("")) }
@@ -163,6 +144,9 @@ fun ChatAppScreen(
     val listState = rememberLazyListState()
     val prevMessageSize = remember { mutableStateOf(uiState.chatHistory.size) }
     var permissionDone by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
+    var userInput by remember { mutableStateOf("") }
+    var nameString by remember { mutableStateOf("$nameVar") }
 
     LaunchedEffect(uiState.chatHistory.size) {
         // Request location and get the latitude and longitude via callback
@@ -196,6 +180,21 @@ fun ChatAppScreen(
                     .fillMaxSize()
                     .padding(padding)
             ) {
+                Button(onClick = {
+                    showDialog = !showDialog
+                }) {
+                    Text("Change My Name")
+                }
+                if (showDialog) {
+                    InputDialog(
+                        title = "Enter Your Name",
+                        onDismiss = { showDialog = false },
+                        onConfirm = {
+                            nameString = it
+                            showDialog = false
+                        }
+                    )
+                }
                 // Middle Scrollable Window
                 LazyColumn(
                     modifier = Modifier
