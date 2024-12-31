@@ -94,6 +94,7 @@ fun NameScreen(navController: NavController,
         )
         Button(
             onClick = {
+                viewModel.setName("${uiState.name}")
                 navController.navigate("chat/${uiState.name}")
             },
             enabled = isButtonEnabled.value,

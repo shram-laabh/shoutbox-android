@@ -14,6 +14,9 @@ class NotificationDbApp : Application() {
             database.execSQL("ALTER TABLE notification_table ADD COLUMN distance REAL NOT NULL DEFAULT 0.0")
         }
     }
+    lateinit var nameDatabase: NameDatabase
+    lateinit var repository: NameRepository
+
     override fun onCreate() {
         super.onCreate()
         database = Room.databaseBuilder(
@@ -21,5 +24,12 @@ class NotificationDbApp : Application() {
             NotificationDatabase::class.java,
             "app_database"
         ).addMigrations(MIGRATION_1_2).build()
+        nameDatabase = Room.databaseBuilder(
+            applicationContext,
+            NameDatabase::class.java,
+            "name_database"
+        ).build()
+
+        repository = NameRepository(nameDatabase.nameDao())
     }
 }
