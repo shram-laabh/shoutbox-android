@@ -6,8 +6,11 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Observer
 import androidx.navigation.NavType
@@ -21,10 +24,14 @@ import com.example.shoutbox.ui.theme.ShoutboxTheme
 import com.example.shoutbox.viewmodels.NameViewModel
 import com.example.shoutbox.viewmodels.ShoutsViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.lifecycleScope
+import com.example.shoutbox.notification.NotificationDbApp
 import com.example.shoutbox.notification.NotificationRepository
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
 
@@ -39,9 +46,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+        val nameRepository = (application as NotificationDbApp).repository
+        nameViewModel = NameViewModel(nameRepository)
         shoutsViewModel = ShoutsViewModel(savedStateHandle = SavedStateHandle(), NotificationRepository(this),
-                                            application)
-        nameViewModel = NameViewModel()
+                                            nameRepository, application)
+
+        var nameOfUser: String? = ""
+        runBlocking{
+            nameOfUser = nameViewModel.getName()
+        }
+
+        Log.d("MainActivity", "Name of User : $nameOfUser")
         shoutsViewModel.errorMessage.observe(this) { message ->
             Log.d("Shout", "Toast not working")
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
@@ -62,15 +77,15 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ShoutboxTheme {
+                val nameExists by nameViewModel.nameExists.observeAsState()
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
                     val navController = rememberNavController()
 
-                    NavHost(navController, "name"){
+                    NavHost(navController, startDestination = if (nameExists == true) "chat/${nameOfUser}" else "name"){
                         composable("name"){
                             NameScreen(navController = navController, viewModel = nameViewModel)
                         }
@@ -79,7 +94,7 @@ class MainActivity : ComponentActivity() {
                         ){ backStackEntry ->
                             ChatAppScreen(navController = navController,
                                 viewModel = shoutsViewModel,
-                                backStackEntry.arguments?.getString("dataKey"))
+                                nameOfUser)
                         }
                     }
                 }

@@ -192,6 +192,7 @@ fun ChatAppScreen(
                         onConfirm = {
                             nameString = it
                             showDialog = false
+                            viewModel.setName(it)
                         }
                     )
                 }

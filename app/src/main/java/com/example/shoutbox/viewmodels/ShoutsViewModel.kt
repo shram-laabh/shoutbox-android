@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.shoutbox.SharedPreferenceStore
+import com.example.shoutbox.notification.NameRepository
 import com.example.shoutbox.notification.NotificationEntity
 import com.example.shoutbox.notification.NotificationRepository
 import com.example.shoutbox.screenstates.ChatMessage
@@ -25,7 +26,7 @@ import java.net.URI
 
 private const val TAG = "ShoutsViewModel"
 
-class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository: NotificationRepository, application: Application) : AndroidViewModel(application = Application()){
+class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository: NotificationRepository, private val nameRepository: NameRepository, application: Application) : AndroidViewModel(application = Application()){
    val data: String = savedStateHandle["dataKey"]?:"Anonym"
    private val prevMessages = SharedPreferenceStore(application)
    val notificationRepository = NotificationRepository(application)
@@ -121,6 +122,17 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
       }
    }
 
+   fun setName(name: String) {
+      viewModelScope.launch {
+         nameRepository.setName(name)
+      }
+   }
+
+   fun clearName() {
+      viewModelScope.launch {
+         nameRepository.clearName()
+      }
+   }
    private fun connectWebSocket() {
       if (webSocketClient == null || webSocketClient?.isClosed == true) {
          webSocketClient = createWebSocketClient()
