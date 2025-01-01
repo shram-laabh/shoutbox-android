@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
         Log.d("MainActivity", "Name of User : $nameOfUser")
         shoutsViewModel.errorMessage.observe(this) { message ->
             Log.d("Shout", "Toast not working")
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+            //Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
         networkMonitor = NetworkMonitor(this)
         lifecycle.addObserver(networkMonitor)
