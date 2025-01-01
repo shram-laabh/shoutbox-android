@@ -113,7 +113,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
                val updatedChatHistory = currentState.chatHistory.toMutableList().apply {
                   for (msg in notificationList.asReversed()){
                      // TODO: Add right distance in State of Chat History
-                     add(ChatMessage("User", msg.message, 3.34))  // Add new message
+                     add(ChatMessage(msg.title, msg.message, 3.34))  // Add new message
                   }
                }
                currentState.copy(chatHistory = updatedChatHistory)

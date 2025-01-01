@@ -65,7 +65,7 @@ class PermissionManager(
                 if (location != null) {
                     val latitude = location.latitude
                     val longitude = location.longitude
-                    Toast.makeText(context, "Lat: $latitude, Lon: $longitude", Toast.LENGTH_LONG).show()
+                    //Toast.makeText(context, "Lat: $latitude, Lon: $longitude", Toast.LENGTH_LONG).show()
                     onLocationReceived(latitude, longitude)
                 } else {
                     Toast.makeText(context, "Unable to fetch location", Toast.LENGTH_SHORT).show()
