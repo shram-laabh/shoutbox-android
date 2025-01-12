@@ -1,3 +1,5 @@
+import io.grpc.internal.SharedResourceHolder.release
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -6,6 +8,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("/Users/ankurgupta/android_keystore/keystore.jks")
+            storePassword = "keystorepass"
+            keyAlias = "key0"
+            keyPassword = "keypass"
+        }
+    }
     namespace = "com.example.shoutbox"
     compileSdk = 34
 
@@ -24,11 +34,13 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -41,6 +53,10 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.3"
     }
+    kotlinOptions {
+        jvmTarget = "17" // Choose a valid target (e.g., "11", "17", "21")
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
