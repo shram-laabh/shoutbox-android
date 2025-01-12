@@ -85,7 +85,10 @@ fun ChatAppScreen(
             permissionDone = true
         }
         listState.animateScrollToItem(kotlin.math.max(0,uiState.chatHistory.size - 1))
-        Log.d("Chatscreen", "NameString = $nameString")
+        val nameFromNavigation = navController.currentBackStackEntry?.arguments?.getString("dataKey")
+        if (nameFromNavigation != null){
+            nameString = nameFromNavigation
+        }
         viewModel.setName(nameString)
     }
 
@@ -165,7 +168,7 @@ fun ChatAppScreen(
                             .onFocusChanged { focusState ->
                                 if (focusState.isFocused) {
                                     coroutineScope.launch {
-                                        listState.animateScrollToItem(uiState.chatHistory.size - 1)
+                                        listState.animateScrollToItem(kotlin.math.max(0,uiState.chatHistory.size - 1))
                                     }
                                 }
                             },
