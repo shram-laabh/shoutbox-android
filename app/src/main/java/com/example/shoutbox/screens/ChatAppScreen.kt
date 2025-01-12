@@ -2,6 +2,7 @@ package com.example.shoutbox.screens
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,6 +23,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
@@ -39,94 +43,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.shoutbox.PermissionManager
 import com.example.shoutbox.viewmodels.ShoutsViewModel
+import kotlinx.coroutines.launch
 import kotlin.math.ceil
 
-/*
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ChatAppScreen(
-    navController: NavController,
-    viewModel: ShoutsViewModel,
-    nameString: String?,
-) {
-    val uiState by viewModel.state.collectAsState()
-    var message by remember { mutableStateOf(TextFieldValue("")) }
-    //var chatHistory by remember { mutableStateOf(listOf<String>()) }
-
-    val context = LocalContext.current
-    val permissionManager = remember { PermissionManager(context) } // Initialize directly
-
-    var latitude by remember { mutableStateOf<Double?>(null) }
-    var longitude by remember { mutableStateOf<Double?>(null) }
-        LaunchedEffect(Unit) {
-            // Request location and get the latitude and longitude via callback
-            permissionManager.requestLocationPermissions { lat, lon ->
-                latitude = lat
-                longitude = lon
-                val jsonMessage = """{"type": "token",
-               |"longitude": ${longitude},
-               |"latitude": ${latitude},
-               |"fcmtoken": "${viewModel.fcmToken.value}"}""".trimMargin()
-                Log.d("ChatAppScreen", "Token Message = $jsonMessage")
-                viewModel.sendMessage(jsonMessage)
-            }
-        }
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)
-        .testTag("ChatScreen")) {
-        Column(modifier = Modifier.weight(1f)) {
-            uiState.chatHistory.forEach { message ->
-                Text(text = message,
-                    modifier = Modifier
-                        .testTag("Message"))
-            }
-        }
-        TextField(
-            value = message,
-            onValueChange = { message = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-                .testTag("ChatMessage")
-        )
-        Text("Your location is  ${latitude}/${longitude}")
-        Button(
-            onClick = {
-                val jsonMessage = """{"type" : "chat",
-                    |"username": "$nameString", 
-                    |"longitude":${longitude},
-                    |"latitude":${latitude},
-                    |"message": "${message.text}"}""".trimMargin()
-                viewModel.sendMessage(jsonMessage)
-                message = TextFieldValue("")
-            },
-            modifier = Modifier
-                .align(Alignment.End)
-                .testTag("SendChatButton")
-        ) {
-            Text("Send")
-        }
-    }
-}
-
-@Preview
-@Composable
-fun ChatAppScreenPreview() {
-    val LocalCustomValue = compositionLocalOf { "Default Value" }
-    CompositionLocalProvider(LocalCustomValue provides "Provided Value") {
-        val context = LocalContext.current
-        ChatAppScreen(navController = rememberNavController(),
-            viewModel = ShoutsViewModel(
-                SavedStateHandle(mapOf()),
-                NotificationRepository(context),
-                Application()
-            ),
-            nameString = "Name")
-    }
-}*/
-
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ChatAppScreen(
     navController: NavController,
@@ -142,11 +62,12 @@ fun ChatAppScreen(
     var latitude by remember { mutableStateOf<Double?>(null) }
     var longitude by remember { mutableStateOf<Double?>(null) }
     val listState = rememberLazyListState()
-    val prevMessageSize = remember { mutableStateOf(uiState.chatHistory.size) }
     var permissionDone by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
-    var userInput by remember { mutableStateOf("") }
     var nameString by remember { mutableStateOf("$nameVar") }
+    val focusRequester = remember { FocusRequester() }
+    val interactionSource = remember { MutableInteractionSource() }
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(uiState.chatHistory.size) {
         // Request location and get the latitude and longitude via callback
@@ -164,6 +85,8 @@ fun ChatAppScreen(
             permissionDone = true
         }
         listState.animateScrollToItem(kotlin.math.max(0,uiState.chatHistory.size - 1))
+        Log.d("Chatscreen", "NameString = $nameString")
+        viewModel.setName(nameString)
     }
 
     Scaffold(
@@ -200,22 +123,27 @@ fun ChatAppScreen(
                 LazyColumn(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(8.dp),
+                        .padding(8.dp)
+                        .imeNestedScroll(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     state = listState
                 ) {
                     items(uiState.chatHistory) { msg ->
-                        Row (horizontalArrangement = Arrangement
-                            .SpaceEvenly,
+                        Row(
+                            horizontalArrangement = Arrangement
+                                .SpaceEvenly,
                             verticalAlignment = Alignment
-                                .Top){
+                                .Top
+                        ) {
                             MessageBox(msg.user, msg.message, msg.distance)
                         }
                         //Divider(thickness = 2.dp)
                     }
                 }
                 // Bottom Action Buttons
+
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -225,12 +153,23 @@ fun ChatAppScreen(
                     TextField(
                         value = message,
                         onValueChange = { newValue ->
-                                        if (!newValue.text.contains("\n")) {
-                                            message = newValue
-                                        }
-                                        },
-                        placeholder = { Text("Enter a Shout") },
-                        modifier = Modifier.weight(1f),
+                            if (!newValue.text.contains("\n")) {
+                                message = newValue
+                            }
+                        },
+                        placeholder = { Text("Enter a Shout... ${WindowInsets.isImeVisible}") },
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester)
+                            .onFocusChanged { focusState ->
+                                if (focusState.isFocused) {
+                                    coroutineScope.launch {
+                                        listState.animateScrollToItem(uiState.chatHistory.size - 1)
+                                    }
+                                }
+                            },
+                        interactionSource = interactionSource,
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
                         keyboardActions = KeyboardActions(onSend = {
                             val jsonMessage = """{"type" : "chat",
