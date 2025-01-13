@@ -10,17 +10,17 @@ plugins {
 android {
     signingConfigs {
         getByName("debug") {
-            storeFile = file("/Users/ankurgupta/android_keystore/keystore.jks")
-            storePassword = "keystorepass"
+            storeFile = file("/Users/ankurgupta/android_shoutbox_keys/android_keystore/keystore.jks")
+            storePassword = "6KStore#Pass"
             keyAlias = "key0"
-            keyPassword = "keypass"
+            keyPassword = "6KPass#"
         }
     }
-    namespace = "com.example.shoutbox"
+    namespace = "com.shoutboxapp.shoutbox"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.shoutbox"
+        applicationId = "com.shoutboxapp.shoutbox"
         minSdk = 24
         targetSdk = 33
         versionCode = 1
