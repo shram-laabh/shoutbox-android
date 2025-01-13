@@ -20,10 +20,10 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 # Keep class names for serialization/deserialization
--keep class com.example.shoutbox.** { *; }
+-keep class com.shoutboxapp.shoutbox.** { *; }
 
 # Keep model classes used by JSON libraries
--keep class com.example.shoutbox.models.** { *; }
+-keep class com.shoutboxapp.shoutbox.models.** { *; }
 
 # Keep Android classes
 -keep public class * extends android.app.Activity
