@@ -30,6 +30,7 @@ class PushNotificationService : FirebaseMessagingService() {
             // saveNotificationUsingWorker()
             //scheduleJob(data["title"], data["body"])
             saveDataToRoom(data["user"], data["body"], data["distance"])
+            Log.d("PushNotf", "${data["nearbyusers"]}")
         }
         if (notification != null) {
             Log.d("FCM_svc", "Message Notification Body: ${notification.title} ${notification.body}")

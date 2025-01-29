@@ -9,5 +9,6 @@ data class ChatMessage(
 
 data class ShoutsState(
     var chatHistory: MutableList<ChatMessage> = mutableListOf(),
-    var isConnected: Boolean = false
+    var isConnected: Boolean = false,
+    var nearbyUsersNum: Int = 0
 )
