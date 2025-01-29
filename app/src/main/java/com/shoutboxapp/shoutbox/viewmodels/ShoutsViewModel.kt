@@ -33,7 +33,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
    private val _state = MutableStateFlow(ShoutsState())
    val state: StateFlow<ShoutsState> = _state.asStateFlow()
    private var webSocketClient: WebSocketClient? = null
-   private val uri = URI("ws://143.244.133.253:8080/ws") //ws://144.126.221.138:8080/ws ws://10.0.2.2:8080/ws
+   private val uri = URI("ws://10.0.2.2:8080/ws") // ws://143.244.133.253:8080/ws
 
    private val _errorMessage = MutableLiveData<String>()
    val errorMessage: LiveData<String> = _errorMessage
@@ -61,26 +61,49 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
                // Add message to list and update state flow
                val jsonObject = JSONObject(newMessage)
                Log.d(TAG, "Received Json $newMessage")
-               val name = jsonObject.getString("username")
-               val message = jsonObject.getString("message")
-               val distance = jsonObject.getString("distance")
+               for (key in jsonObject.keys()) {
+                  val value = jsonObject.get(key)
+                  if (key == "username") {
+                  } else if (key == "nearusers"){
+                  }
+               }
                //  Be curious why we used viewModelScope.launch
-               viewModelScope.launch {
-                  _state.update { currentState ->
-                     val updatedChatHistory = currentState.chatHistory.toMutableList().apply {
-                        add(ChatMessage(name, message, distance.toDouble()))  // Add new message
+               val typeOfResponse = jsonObject.getString("typeofresponse")
+               if (typeOfResponse == "chat"){
+                     val name = jsonObject.getString("username")
+                     val message = jsonObject.getString("message")
+                     val distance = jsonObject.getString("distance")
+                     val numOfnearbyusers = jsonObject.getInt("nearusers")
+                     viewModelScope.launch {
+                        _state.update { currentState ->
+                           val updatedChatHistory = currentState.chatHistory.toMutableList().apply {
+                              add(ChatMessage(name, message, distance.toDouble()))  // Add new message
+                           }
+                           currentState.copy(chatHistory = updatedChatHistory, nearbyUsersNum = numOfnearbyusers)
+                        }
+
+                        val messageToSave = NotificationEntity(
+                           title = name,
+                           message = message,
+                           timestamp = System.currentTimeMillis(),
+                           distance = distance.toDouble()
+                        )
+                        saveMessageToDB(messageToSave)
+                        //clearMessages()
+                  }
+               } else if (typeOfResponse == "token"){
+                  val nearusers = jsonObject.getInt("nearusers")
+                  Log.d("ShoutboxViewModel", "Nearusers = $nearusers")
+                  viewModelScope.launch {
+                     _state.update { currentState ->
+                        currentState.copy(
+                           nearbyUsersNum = nearusers
+                        )
                      }
-                     currentState.copy(chatHistory = updatedChatHistory)
                   }
 
-                  val messageToSave = NotificationEntity(
-                     title = name,
-                     message = message,
-                     timestamp = System.currentTimeMillis(),
-                     distance = distance.toDouble()
-                  )
-                  saveMessageToDB(messageToSave)
-                  //clearMessages()
+               } else {
+                  Log.d("ShoutboxViewModel", "Message is unrecognizable")
                }
             }
          }
