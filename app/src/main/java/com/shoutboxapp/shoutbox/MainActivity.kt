@@ -10,6 +10,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Observer
 import androidx.navigation.NavType
@@ -82,17 +84,29 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-
-                    NavHost(navController, startDestination = if (nameExists == true) "chat/${nameOfUser}" else "name"){
-                        composable("name"){
-                            NameScreen(navController = navController, viewModel = nameViewModel)
-                        }
-                        composable("chat/{dataKey}",
-                            arguments = listOf(navArgument("dataKey"){type = NavType.StringType})
-                        ){ backStackEntry ->
-                            ChatAppScreen(navController = navController,
-                                viewModel = shoutsViewModel,
-                                nameOfUser)
+                    if (nameExists == true) {
+                        ChatAppScreen(
+                            navController = navController,
+                            viewModel = shoutsViewModel,
+                            nameOfUser
+                        )
+                    }else {
+                        NavHost(navController, startDestination = if (nameExists == true) "chat/${nameOfUser}" else "name") {
+                            composable("name") {
+                                NameScreen(navController = navController, viewModel = nameViewModel)
+                            }
+                            composable(
+                                "chat/{dataKey}",
+                                arguments = listOf(navArgument("dataKey") {
+                                    type = NavType.StringType
+                                })
+                            ) { backStackEntry ->
+                                ChatAppScreen(
+                                    navController = navController,
+                                    viewModel = shoutsViewModel,
+                                    nameOfUser
+                                )
+                            }
                         }
                     }
                 }

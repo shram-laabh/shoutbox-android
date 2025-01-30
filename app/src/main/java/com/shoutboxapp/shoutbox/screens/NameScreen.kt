@@ -91,7 +91,9 @@ fun NameScreen(navController: NavController,
         Button(
             onClick = {
                 viewModel.setName("$nameOfShouter")
-                navController.navigate("chat/$nameOfShouter")
+                navController.navigate("chat/$nameOfShouter"){
+                    popUpTo("screen1") { inclusive = true }
+                }
             },
             enabled = isButtonEnabled.value,
             modifier = Modifier
