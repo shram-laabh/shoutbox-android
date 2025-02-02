@@ -64,7 +64,7 @@ fun NameScreen(navController: NavController,
                 longitude = lon
             }
         } else {
-            Toast.makeText(context, "Location permission denied", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Location Permission Denied", Toast.LENGTH_SHORT).show()
         }
     }
 

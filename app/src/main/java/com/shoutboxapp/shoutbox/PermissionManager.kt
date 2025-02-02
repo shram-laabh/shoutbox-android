@@ -38,15 +38,17 @@ class PermissionManager(
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-
-            Toast.makeText(context, "Location permission already granted", Toast.LENGTH_SHORT).show()
-            locationLauncher.launch(
-                arrayOf(
-                    Manifest.permission.POST_NOTIFICATIONS,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
+            if (::locationLauncher.isInitialized){
+                locationLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.POST_NOTIFICATIONS,
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                    )
                 )
-            )
+            } else {
+                Toast.makeText(context, "Permissions are needed for accuracy", Toast.LENGTH_SHORT).show()
+            }
         } else {
             getCurrentLocation(onLocationReceived)
         }
