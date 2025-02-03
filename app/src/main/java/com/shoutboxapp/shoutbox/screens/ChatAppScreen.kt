@@ -94,7 +94,7 @@ fun ChatAppScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nearby Users : ${uiState.nearbyUsersNum}",
+                title = { Text("Total Nearby Users : ${uiState.nearbyUsersNum}",
                     color = Color.Green) },
                         colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Black),
             )
