@@ -94,10 +94,63 @@ fun ChatAppScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nearby Users : ${uiState.nearbyUsersNum}",
+                title = { Text("Total Nearby Users : ${uiState.nearbyUsersNum}",
                     color = Color.Green) },
-                        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Black)
+                        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Black),
             )
+        },
+        bottomBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .imePadding(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TextField(
+                    value = message,
+                    onValueChange = { newValue ->
+                        if (!newValue.text.contains("\n")) {
+                            message = newValue
+                        }
+                    },
+                    placeholder = { Text("Enter a Shout...") },
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            if (focusState.isFocused) {
+                                coroutineScope.launch {
+                                    listState.animateScrollToItem(kotlin.math.max(0,uiState.chatHistory.size - 1))
+                                }
+                            }
+                        },
+                    interactionSource = interactionSource,
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(onSend = {
+                        val jsonMessage = """{"type" : "chat",
+                    |"username": "$nameString", 
+                    |"longitude":${longitude},
+                    |"latitude":${latitude},
+                    |"message": "${message.text}"}""".trimMargin()
+                        viewModel.sendMessage(jsonMessage)
+                        message = TextFieldValue("")
+                    })
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(onClick = {
+                    val jsonMessage = """{"type" : "chat",
+                    |"username": "$nameString", 
+                    |"longitude":${longitude},
+                    |"latitude":${latitude},
+                    |"message": "${message.text}"}""".trimMargin()
+                    viewModel.sendMessage(jsonMessage)
+                    message = TextFieldValue("")
+                }) {
+                    Text("Shout")
+                }
+            }
         },
         content = { padding ->
             Column(
@@ -144,58 +197,6 @@ fun ChatAppScreen(
                     }
                 }
                 // Bottom Action Buttons
-
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    TextField(
-                        value = message,
-                        onValueChange = { newValue ->
-                            if (!newValue.text.contains("\n")) {
-                                message = newValue
-                            }
-                        },
-                        placeholder = { Text("Enter a Shout...") },
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .focusRequester(focusRequester)
-                            .onFocusChanged { focusState ->
-                                if (focusState.isFocused) {
-                                    coroutineScope.launch {
-                                        listState.animateScrollToItem(kotlin.math.max(0,uiState.chatHistory.size - 1))
-                                    }
-                                }
-                            },
-                        interactionSource = interactionSource,
-                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
-                        keyboardActions = KeyboardActions(onSend = {
-                            val jsonMessage = """{"type" : "chat",
-                    |"username": "$nameString", 
-                    |"longitude":${longitude},
-                    |"latitude":${latitude},
-                    |"message": "${message.text}"}""".trimMargin()
-                            viewModel.sendMessage(jsonMessage)
-                            message = TextFieldValue("")
-                        })
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = {
-                        val jsonMessage = """{"type" : "chat",
-                    |"username": "$nameString", 
-                    |"longitude":${longitude},
-                    |"latitude":${latitude},
-                    |"message": "${message.text}"}""".trimMargin()
-                        viewModel.sendMessage(jsonMessage)
-                        message = TextFieldValue("")
-                    }) {
-                        Text("Shout")
-                    }
-                }
             }
         }
     )

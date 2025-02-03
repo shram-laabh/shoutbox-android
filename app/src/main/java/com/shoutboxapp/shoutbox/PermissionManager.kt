@@ -38,7 +38,6 @@ class PermissionManager(
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            if (::locationLauncher.isInitialized){
                 locationLauncher.launch(
                     arrayOf(
                         Manifest.permission.POST_NOTIFICATIONS,
@@ -46,9 +45,6 @@ class PermissionManager(
                         Manifest.permission.ACCESS_COARSE_LOCATION,
                     )
                 )
-            } else {
-                Toast.makeText(context, "Permissions are needed for accuracy", Toast.LENGTH_SHORT).show()
-            }
         } else {
             getCurrentLocation(onLocationReceived)
         }
