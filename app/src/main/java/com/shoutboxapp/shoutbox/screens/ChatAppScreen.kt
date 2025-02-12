@@ -96,7 +96,7 @@ fun ChatAppScreen(
             TopAppBar(
                 title = { Text("Total Nearby Users : ${uiState.nearbyUsersNum}",
                     color = Color.Green) },
-                        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Black),
+                        colors = TopAppBarDefaults.topAppBarColors(Black),
             )
         },
         bottomBar = {
@@ -122,7 +122,12 @@ fun ChatAppScreen(
                         .onFocusChanged { focusState ->
                             if (focusState.isFocused) {
                                 coroutineScope.launch {
-                                    listState.animateScrollToItem(kotlin.math.max(0,uiState.chatHistory.size - 1))
+                                    listState.animateScrollToItem(
+                                        kotlin.math.max(
+                                            0,
+                                            uiState.chatHistory.size - 1
+                                        )
+                                    )
                                 }
                             }
                         },
