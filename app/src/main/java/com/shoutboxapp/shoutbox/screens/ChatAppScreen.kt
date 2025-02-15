@@ -1,6 +1,7 @@
 package com.shoutboxapp.shoutbox.screens
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -56,6 +57,7 @@ fun ChatAppScreen(
     var message by remember { mutableStateOf(TextFieldValue("")) }
 
     val context = LocalContext.current
+    val errorMessage by viewModel.errorMessage.collectAsState()
     val permissionManager = remember { PermissionManager(context) } // Initialize directly
 
     var latitude by remember { mutableStateOf<Double?>(null) }
@@ -68,6 +70,17 @@ fun ChatAppScreen(
     val interactionSource = remember { MutableInteractionSource() }
     val coroutineScope = rememberCoroutineScope()
 
+    LaunchedEffect(uiState.isConnected){
+        if (uiState.isConnected) {
+            val jsonMessage = """{"type": "token",
+               |"longitude": ${longitude},
+               |"latitude": ${latitude},
+               |"fcmtoken": "${viewModel.fcmToken.value}"}""".trimMargin()
+            Log.d("ChatAppScreen", "Token Message = $jsonMessage")
+            viewModel.sendMessage(jsonMessage)
+        }
+
+    }
     LaunchedEffect(uiState.chatHistory.size) {
         // Request location and get the latitude and longitude via callback
         if (!permissionDone){
@@ -151,6 +164,10 @@ fun ChatAppScreen(
                     |"latitude":${latitude},
                     |"message": "${message.text}"}""".trimMargin()
                     viewModel.sendMessage(jsonMessage)
+                    errorMessage?.let { message ->
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        viewModel.clearError()  // Reset error state after showing Toast
+                    }
                     message = TextFieldValue("")
                 }) {
                     Text("Shout")
