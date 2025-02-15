@@ -57,10 +57,6 @@ class MainActivity : ComponentActivity() {
         }
 
         Log.d("MainActivity", "Name of User : $nameOfUser")
-        shoutsViewModel.errorMessage.observe(this) { message ->
-            Log.d("Shout", "Toast not working")
-            //Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-        }
         networkMonitor = NetworkMonitor(this)
         lifecycle.addObserver(networkMonitor)
 
@@ -69,7 +65,8 @@ class MainActivity : ComponentActivity() {
                // Toast.makeText(this, "Connected to Internet", Toast.LENGTH_SHORT).show()
                 // Network is restored, trigger reconnection logic
             } else {
-                Toast.makeText(this, "Connecting to back to Internet", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Connecting back to Internet", Toast.LENGTH_SHORT).show()
+                shoutsViewModel.setStatusAsDisconnected()
                 shoutsViewModel.reconnectWebSocket()
                 // Network is lost, handle the situation if needed
             }

@@ -35,8 +35,8 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
    private var webSocketClient: WebSocketClient? = null
    private val uri = URI("ws://143.244.133.253:8080/ws") // ws://143.244.133.253:8080/ws ws://10.0.2.2:8080/ws
 
-   private val _errorMessage = MutableLiveData<String>()
-   val errorMessage: LiveData<String> = _errorMessage
+   private val _errorMessage = MutableStateFlow<String?>(null)
+   val errorMessage: StateFlow<String?> = _errorMessage
 
    private val _fcmToken = MutableLiveData<String>()
    val fcmToken: LiveData<String> get() = _fcmToken
@@ -164,6 +164,13 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
          webSocketClient?.connect()
       }
    }
+   fun setStatusAsDisconnected() {
+      viewModelScope.launch {
+         _state.update { currentState ->
+            currentState.copy(isConnected = false)
+         }
+      }
+   }
    fun reconnectWebSocket() {
       viewModelScope.launch(Dispatchers.IO) {
          // Optionally add a delay before reconnecting
@@ -181,5 +188,8 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
       }catch (e: Exception){
          _errorMessage.value = "Looks like connection is broken!!. Restart your network."
       }
+   }
+   fun clearError() {
+      _errorMessage.value = null
    }
 }
