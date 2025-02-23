@@ -141,17 +141,21 @@ fun ChatAppScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(onClick = {
-                    val jsonMessage = """{"type" : "chat",
-                    |"username": "$nameString", 
-                    |"longitude":${longitude},
-                    |"latitude":${latitude},
-                    |"message": "${message.text}"}""".trimMargin()
-                    viewModel.sendMessage(jsonMessage)
-                    errorMessage?.let { message ->
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                        viewModel.clearError()  // Reset error state after showing Toast
+                    if (message.text.isEmpty()){
+                        Toast.makeText(context, "Shout is Empty..", Toast.LENGTH_SHORT).show()
+                    }else {
+                        val jsonMessage = """{"type" : "chat",
+                        |"username": "$nameString", 
+                        |"longitude":${longitude},
+                        |"latitude":${latitude},
+                        |"message": "${message.text}"}""".trimMargin()
+                        viewModel.sendMessage(jsonMessage)
+                        errorMessage?.let { message ->
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            viewModel.clearError()  // Reset error state after showing Toast
+                        }
+                        message = TextFieldValue("")
                     }
-                    message = TextFieldValue("")
                 }) {
                     Text("Shout")
                 }
@@ -173,9 +177,13 @@ fun ChatAppScreen(
                         title = "Enter Your Name",
                         onDismiss = { showDialog = false },
                         onConfirm = {
-                            nameString = it
-                            showDialog = false
-                            viewModel.setName(it)
+                            if (it.length > 3){
+                                nameString = it
+                                showDialog = false
+                                viewModel.setName(it)
+                            }else {
+                                Toast.makeText(context, "Name Length needs to be larger than 3 characters", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     )
                 }
