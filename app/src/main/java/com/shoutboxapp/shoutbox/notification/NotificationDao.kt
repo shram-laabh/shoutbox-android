@@ -16,4 +16,15 @@ interface NotificationDao {
 
     @Query("DELETE FROM notification_table")
     suspend fun clearTable()
+
+    // Delete entries that are older than the latest 1000
+    @Query("""
+        DELETE FROM notification_table 
+        WHERE id NOT IN (
+            SELECT id FROM notification_table 
+            ORDER BY timestamp DESC 
+            LIMIT 1000
+        )
+    """)
+    suspend fun deleteOldEntries()
 }
