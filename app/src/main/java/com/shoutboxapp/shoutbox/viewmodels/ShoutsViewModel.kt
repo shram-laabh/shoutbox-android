@@ -110,6 +110,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
                            distance = distance.toDouble()
                         )
                         saveMessageToDB(messageToSave)
+                        deleteOldMessage()
                         //clearMessages()
                   }
                } else if (typeOfResponse == "token"){
@@ -131,6 +132,9 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
 
          suspend fun saveMessageToDB(data: NotificationEntity) {
             notificationRepository.notificationDao.insert(data)
+         }
+         suspend fun deleteOldMessage() {
+            notificationRepository.notificationDao.deleteOldEntries()
          }
          suspend fun clearMessages() {
             notificationRepository.notificationDao.clearTable()
