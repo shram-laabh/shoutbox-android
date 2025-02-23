@@ -94,10 +94,11 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
                      val message = jsonObject.getString("message")
                      val distance = jsonObject.getString("distance")
                      val numOfnearbyusers = jsonObject.getInt("nearusers")
+                     val timestamp = System.currentTimeMillis()
                      viewModelScope.launch {
                         _state.update { currentState ->
                            val updatedChatHistory = currentState.chatHistory.toMutableList().apply {
-                              add(ChatMessage(name, message, distance.toDouble()))  // Add new message
+                              add(ChatMessage(name, message, distance.toDouble(), timestamp))  // Add new message
                            }
                            currentState.copy(chatHistory = updatedChatHistory, nearbyUsersNum = numOfnearbyusers)
                         }
@@ -105,7 +106,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
                         val messageToSave = NotificationEntity(
                            title = name,
                            message = message,
-                           timestamp = System.currentTimeMillis(),
+                           timestamp = timestamp,
                            distance = distance.toDouble()
                         )
                         saveMessageToDB(messageToSave)
@@ -156,7 +157,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
                val updatedChatHistory = currentState.chatHistory.toMutableList().apply {
                   for (msg in notificationList.asReversed()){
                      // TODO: Add right distance in State of Chat History
-                     add(ChatMessage(msg.title, msg.message, msg.distance))  // Add new message
+                     add(ChatMessage(msg.title, msg.message, msg.distance, msg.timestamp))  // Add new message
                   }
                }
                currentState.copy(chatHistory = updatedChatHistory)

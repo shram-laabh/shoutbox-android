@@ -4,7 +4,8 @@ package com.shoutboxapp.shoutbox.screenstates
 data class ChatMessage(
     val user: String,      // The user who sent the message
     val message: String,   // The content of the message
-    val distance: Double // Timestamp of the message (optional)
+    val distance: Double,   // Distance from which messgae has come
+    val timestamp: Long     // Timestamp of the message (optional)
 )
 
 data class ShoutsState(

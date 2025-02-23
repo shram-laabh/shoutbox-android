@@ -37,6 +37,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,6 +45,9 @@ import androidx.navigation.NavController
 import com.shoutboxapp.shoutbox.PermissionManager
 import com.shoutboxapp.shoutbox.viewmodels.ShoutsViewModel
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.ceil
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -192,7 +196,7 @@ fun ChatAppScreen(
                             verticalAlignment = Alignment
                                 .Top
                         ) {
-                            MessageBox(msg.user, msg.message, msg.distance)
+                            MessageBox(msg.user, msg.message, msg.distance, msg.timestamp)
                         }
                         //Divider(thickness = 2.dp)
                     }
@@ -204,7 +208,7 @@ fun ChatAppScreen(
 }
 
 @Composable
-fun MessageBox(nameString: String, message: String, distance: Double) {
+fun MessageBox(nameString: String, message: String, distance: Double, timestamp: Long) {
     ElevatedCard(
         colors = CardDefaults.cardColors(
             containerColor = Color.Black
@@ -215,7 +219,10 @@ fun MessageBox(nameString: String, message: String, distance: Double) {
         Row{
             Column (verticalArrangement = Arrangement
                 .SpaceAround){
-                Row{
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxSize()
+                ){
                     Text(
                         text = nameString,
                         style = TextStyle(
@@ -226,6 +233,8 @@ fun MessageBox(nameString: String, message: String, distance: Double) {
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     DistanceDiplay(distance)
+                    Spacer(modifier = Modifier.width(16.dp))
+                    TimeDisplay(timestamp)
                 }
                 Divider(thickness = 0.1.dp)
                 Row{
@@ -251,7 +260,7 @@ fun DistanceDiplay(distance: Double){
     // Blue   -> 3
     // Maroon -> 4
     // Red    -> 5
-    var distColor = Color.Black.value
+    var distColor = Color.White.value
     //if (floor(distance) == 1.0)
     var x = ceil(distance)
     when (x){
@@ -269,6 +278,20 @@ fun DistanceDiplay(distance: Double){
             color = Color(distColor),
             fontSize = 20.sp
         )
+    )
+}
+@Composable
+fun TimeDisplay(timestamp: Long){
+    val sdf = SimpleDateFormat("EEE, HH:mm", Locale.getDefault()) // "EEEE" for day, "HH:mm" for hour and minute
+    val formattedDate = sdf.format(Date(timestamp))
+
+    Text(
+        text = "$formattedDate",
+        style = TextStyle(
+            color = Color.Green,
+            fontSize = 20.sp,
+            textAlign = TextAlign.Right
+        ),
     )
 }
 @Preview(showBackground = true)
