@@ -29,6 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.shoutboxapp.shoutbox.PermissionManager
+import com.shoutboxapp.shoutbox.PermissionManagerSingleton
 import com.shoutboxapp.shoutbox.viewmodels.NameViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,36 +40,14 @@ fun NameScreen(navController: NavController,
     var nameOfShouter by remember { mutableStateOf("") }
 
     val context = LocalContext.current
-    val permissionManager = remember { PermissionManager(context) }
 
     var latitude by remember { mutableStateOf<Double?>(null) }
     var longitude by remember { mutableStateOf<Double?>(null) }
-    // Notification permission launcher (For Android 13 and above)
 
     val isNameValid: (String) -> Boolean = {
         it.length > 3
     }
     var isButtonEnabled = remember{ mutableStateOf(false) }
-    // Location permission launcher
-    val locationLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
-        val coarseLocationGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
-
-        if (fineLocationGranted || coarseLocationGranted) {
-            Toast.makeText(context, "Location permission granted", Toast.LENGTH_SHORT).show()
-            // Now get the current location
-            permissionManager.requestLocationPermissions { lat, lon ->
-                latitude = lat
-                longitude = lon
-            }
-        } else {
-            Toast.makeText(context, "Location Permission Denied", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    permissionManager.setLocationLauncher(locationLauncher)
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -104,14 +83,6 @@ fun NameScreen(navController: NavController,
         }
 
         //Text("Your location is  ${currentLocation.latitude}/${currentLocation.longitude}")
-    }
-    LaunchedEffect(Unit){
-        //permissionManager.requestNotificationPermission()
-
-        permissionManager.requestLocationPermissions { lat, lon ->
-            latitude = lat
-            longitude = lon
-        }
     }
 }
 

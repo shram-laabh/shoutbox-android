@@ -58,10 +58,10 @@ fun ChatAppScreen(
 
     val context = LocalContext.current
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val longitude by viewModel.longitude.collectAsState()
+    val latitude by viewModel.latitude.collectAsState()
     val permissionManager = remember { PermissionManager(context) } // Initialize directly
 
-    var latitude by remember { mutableStateOf<Double?>(null) }
-    var longitude by remember { mutableStateOf<Double?>(null) }
     val listState = rememberLazyListState()
     var permissionDone by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
@@ -70,30 +70,9 @@ fun ChatAppScreen(
     val interactionSource = remember { MutableInteractionSource() }
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(uiState.isConnected){
-        if (uiState.isConnected) {
-            val jsonMessage = """{"type": "token",
-               |"longitude": ${longitude},
-               |"latitude": ${latitude},
-               |"fcmtoken": "${viewModel.fcmToken.value}"}""".trimMargin()
-            Log.d("ChatAppScreen", "Token Message = $jsonMessage")
-            viewModel.sendMessage(jsonMessage)
-        }
-
-    }
     LaunchedEffect(uiState.chatHistory.size) {
         // Request location and get the latitude and longitude via callback
         if (!permissionDone){
-            permissionManager.requestLocationPermissions { lat, lon ->
-                latitude = lat
-                longitude = lon
-                val jsonMessage = """{"type": "token",
-               |"longitude": ${longitude},
-               |"latitude": ${latitude},
-               |"fcmtoken": "${viewModel.fcmToken.value}"}""".trimMargin()
-                Log.d("ChatAppScreen", "Token Message = $jsonMessage")
-                viewModel.sendMessage(jsonMessage)
-            }
             permissionDone = true
         }
         listState.animateScrollToItem(kotlin.math.max(0,uiState.chatHistory.size - 1))

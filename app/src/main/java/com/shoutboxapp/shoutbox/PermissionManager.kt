@@ -4,13 +4,19 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Looper
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 
 data class LocationData(val latitude: Double, val longitude: Double)
 class PermissionManager(
@@ -52,6 +58,7 @@ class PermissionManager(
 
     @SuppressLint("MissingPermission") // Suppress the warning since permissions are handled above
     private fun getCurrentLocation(onLocationReceived: (Double, Double) -> Unit) {
+        Log.d("ShoutsViewModel", "Attempting to fetch location...")
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location ->
                 if (location != null) {
@@ -59,8 +66,25 @@ class PermissionManager(
                     val longitude = location.longitude
                     //Toast.makeText(context, "Lat: $latitude, Lon: $longitude", Toast.LENGTH_LONG).show()
                     onLocationReceived(latitude, longitude)
+                    Log.d("ShoutsViewModel", "Received location: Lat = ${location.latitude}, Lon = ${location.longitude}")
                 } else {
                     Toast.makeText(context, "Unable to fetch location", Toast.LENGTH_SHORT).show()
+                    Log.d("ShoutsViewModel", "Last Location is null, requesting a new one...")
+                    val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000).build()
+                    val locationCallback = object : LocationCallback() {
+                        override fun onLocationResult(locationResult: LocationResult) {
+                            locationResult.lastLocation?.let { newLocation ->
+                                Log.d("ShoutsViewModel", "New Location: Lat = ${newLocation.latitude}, Lon = ${newLocation.longitude}")
+                                onLocationReceived(newLocation.latitude, newLocation.longitude)
+                                fusedLocationClient.removeLocationUpdates(this)
+                            }
+                        }
+                    }
+                    fusedLocationClient.requestLocationUpdates(
+                        locationRequest,
+                        locationCallback,
+                        Looper.getMainLooper()
+                    )
                 }
             }.addOnFailureListener { exception ->
                 Toast.makeText(context, "Error getting location: ${exception.message}", Toast.LENGTH_SHORT).show()
