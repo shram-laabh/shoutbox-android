@@ -7,6 +7,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.shoutboxapp.shoutbox.PermissionManager
+import com.shoutboxapp.shoutbox.PermissionManagerSingleton
 import com.shoutboxapp.shoutbox.SharedPreferenceStore
 import com.shoutboxapp.shoutbox.notification.NameRepository
 import com.shoutboxapp.shoutbox.notification.NotificationEntity
@@ -38,8 +40,14 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
    private val _errorMessage = MutableStateFlow<String?>(null)
    val errorMessage: StateFlow<String?> = _errorMessage
 
+   private val _longitude = MutableStateFlow<Double>(0.0)
+   val longitude: StateFlow<Double> = _longitude
+   private val _latitude = MutableStateFlow<Double>(0.0)
+   val latitude: StateFlow<Double> = _latitude
+
    private val _fcmToken = MutableLiveData<String>()
    val fcmToken: LiveData<String> get() = _fcmToken
+   private val permissionManager = PermissionManagerSingleton.permissionManager
 
    // Function to set the FCM token
    fun setFcmToken(token: String) {
@@ -52,6 +60,18 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
             viewModelScope.launch {
                _state.update { currentState ->
                   currentState.copy(isConnected = true)
+               }
+
+               Log.d("ShoutsViewModel", "Getting Location")
+               permissionManager.requestLocationPermissions { lat, lon ->
+                  _latitude.value = lat
+                  _longitude.value = lon
+                  val jsonMessage = """{"type": "token",
+               |"longitude": ${_longitude.value},
+               |"latitude": ${_latitude.value},
+               |"fcmtoken": "${_fcmToken.value}"}""".trimMargin()
+                  Log.d("ShoutsViewModel", "JSONTokenMessage = $jsonMessage")
+                  sendMessage(jsonMessage)
                }
             }
          }

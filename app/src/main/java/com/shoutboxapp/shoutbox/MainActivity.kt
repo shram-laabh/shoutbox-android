@@ -1,10 +1,13 @@
 package com.shoutboxapp.shoutbox
 
+import android.Manifest
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -30,6 +33,7 @@ import com.shoutboxapp.shoutbox.notification.NotificationRepository
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.messaging.FirebaseMessaging
+import com.shoutboxapp.shoutbox.screens.LaunchScreen
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
@@ -43,6 +47,23 @@ class MainActivity : ComponentActivity() {
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val locationLauncher = registerForActivityResult(
+            contract = ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+            val coarseLocationGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+
+            if (fineLocationGranted || coarseLocationGranted) {
+                Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show()
+                // Now get the current location
+            } else {
+                Toast.makeText(this, "Location Permission Denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+        PermissionManagerSingleton.init(this)
+        val permissionManager = PermissionManagerSingleton.permissionManager
+        permissionManager.setLocationLauncher(locationLauncher)
        // WindowCompat.setDecorFitsSystemWindows(window, false)
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
@@ -81,14 +102,11 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    if (nameExists == true) {
-                        ChatAppScreen(
-                            navController = navController,
-                            viewModel = shoutsViewModel,
-                            nameOfUser
-                        )
-                    }else {
-                        NavHost(navController, startDestination = if (nameExists == true) "chat/${nameOfUser}" else "name") {
+                        NavHost(navController, startDestination = "launch") {
+                            composable("launch") {
+                                LaunchScreen(navController, nameViewModel, nameOfUser)
+                            }
+
                             composable("name") {
                                 NameScreen(navController = navController, viewModel = nameViewModel)
                             }
@@ -108,7 +126,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-        }
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 Log.w("FCM", "Fetching FCM registration token failed", task.exception)
