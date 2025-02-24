@@ -16,6 +16,7 @@ import com.shoutboxapp.shoutbox.notification.NotificationRepository
 import com.shoutboxapp.shoutbox.screenstates.ChatMessage
 import com.shoutboxapp.shoutbox.screenstates.ShoutsState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,6 +50,8 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
    val fcmToken: LiveData<String> get() = _fcmToken
    private val permissionManager = PermissionManagerSingleton.permissionManager
 
+   private val _isLocationAvailable = MutableStateFlow(false) // or MutableLiveData<Boolean>()
+   val isLocationAvailable: StateFlow<Boolean> get() = _isLocationAvailable
    // Function to set the FCM token
    fun setFcmToken(token: String) {
       _fcmToken.value = token
@@ -72,6 +75,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
                |"fcmtoken": "${_fcmToken.value}"}""".trimMargin()
                   Log.d("ShoutsViewModel", "JSONTokenMessage = $jsonMessage")
                   sendMessage(jsonMessage)
+                  setLocationStatus(true)
                }
             }
          }
@@ -154,7 +158,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
    init {
       // Initialize WebSocket and connect
       connectWebSocket()
-
+      startCheckingLocation()
       viewModelScope.launch {
          repository.notificationDao.getTop100Notifications().collect { notificationList ->
             _state.update { currentState ->
@@ -168,6 +172,40 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
             }
          }
       }
+   }
+
+   private fun startCheckingLocation() {
+      viewModelScope.launch {
+         while (!_isLocationAvailable.value) {
+            if (_fcmToken.value != null){
+               getLocation()
+            }
+            if (_isLocationAvailable.value) {
+               break // Stop checking
+            }
+            delay(1000) // Check every second
+         }
+      }
+   }
+
+   private fun getLocation() {
+      // Perform your action here
+      Log.d("ShoutsViewModel", "Getting Location")
+         permissionManager.requestLocationPermissions { lat, lon ->
+            _latitude.value = lat
+            _longitude.value = lon
+            val jsonMessage = """{"type": "token",
+               |"longitude": ${_longitude.value},
+               |"latitude": ${_latitude.value},
+               |"fcmtoken": "${_fcmToken.value}"}""".trimMargin()
+            Log.d("ShoutsViewModel", "JSONTokenMessageAct = $jsonMessage")
+            setLocationStatus(true)
+            sendMessage(jsonMessage)
+         }
+   }
+
+   fun setLocationStatus(value: Boolean) {
+      _isLocationAvailable.value = value
    }
 
    fun setName(name: String) {
