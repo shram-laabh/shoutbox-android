@@ -36,7 +36,7 @@ class ShoutsViewModel(savedStateHandle: SavedStateHandle, private val repository
    private val _state = MutableStateFlow(ShoutsState())
    val state: StateFlow<ShoutsState> = _state.asStateFlow()
    private var webSocketClient: WebSocketClient? = null
-   private val uri = URI("ws://143.244.133.253:8080/ws") // ws://143.244.133.253:8080/ws ws://10.0.2.2:8080/ws
+   private val uri = URI("ws://143.244.133.253:80/ws") // ws://143.244.133.253:8080/ws ws://10.0.2.2:8080/ws
 
    private val _errorMessage = MutableStateFlow<String?>(null)
    val errorMessage: StateFlow<String?> = _errorMessage
