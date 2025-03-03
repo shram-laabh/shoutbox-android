@@ -39,6 +39,10 @@
 -keep class * {
     @javax.inject.* <methods>;
 }
+-keepattributes SourceFile,LineNumberTable
+-keep class * {
+    public protected *;
+}
 
 # Keep Instrumentation classes if they are required
 -keep class android.test.** { *; }

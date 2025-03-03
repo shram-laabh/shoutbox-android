@@ -33,6 +33,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            isDebuggable = true
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -65,6 +68,8 @@ android {
 }
 
 dependencies {
+    val fragment_version = "1.8.6"
+    implementation("androidx.fragment:fragment:$fragment_version")
     val composeBom = platform("androidx.compose:compose-bom:2025.01.01")
     implementation("androidx.test:core-ktx:1.6.1")
     //Work Manager
