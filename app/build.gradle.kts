@@ -23,8 +23,8 @@ android {
         applicationId = "com.shoutboxapp.shoutbox"
         minSdk = 24
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.3"
+        versionCode = 7
+        versionName = "1.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -37,6 +37,12 @@ android {
             isDebuggable = true
         }
         release {
+            ndk {
+                debugSymbolLevel = "FULL" // FULL generates symbols for all C/C++ code
+            }
+            packaging {
+                "**/*.so"
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
